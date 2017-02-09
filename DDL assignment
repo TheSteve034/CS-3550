@@ -1,0 +1,168 @@
+USE MASTER;
+--drop PurpleBoxDVD DB if it exsists
+IF EXISTS (SELECT * FROM sys.sysdatabases WHERE name = 'PurpleBoxDVD')
+	DROP DATABASE PurpleBoxDVD;
+--create PurpleBoxDVD DB
+CREATE DATABASE PurpleBoxDVD
+ON PRIMARY
+(NAME = N'PurpleBoxDVD', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQLEXPRESS\MSSQL\DATA\PurpleBoxDVD.mdf', 
+SIZE = 5120KB, FILEGROWTH = 1024KB)
+LOG ON
+(NAME = N'PurpleBoxDVDLog', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQLEXPRESS\MSSQL\DATA\PurpleBoxDVDLog.ldf', 
+SIZE = 2048KB, FILEGROWTH = 10%);
+GO
+--Attach to new DB
+USE PurpleBoxDVD;
+---------------------------Drop all tables if they exist -----------------------------------------------------------------------------------------------------------
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbUser')
+	DROP TABLE PbUser;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovie')
+	DROP TABLE pbMovie;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbRental')
+	DROP TABLE pbRental;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbReservation')
+	DROP TABLE pbReservation;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbUserPhone')
+	DROP TABLE pbUserPhone;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbPhoneNumber')
+	DROP TABLE pbPhoneNumber;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbSecurityAnswers')
+	DROP TABLE pbSecurityAnswers;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbSecurityQuestions')
+	DROP TABLE pbSecurityQuestions;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovieItem')
+	DROP TABLE pbMovieItem;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbFormat')
+	DROP TABLE pbFormat;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovie')
+	DROP TABLE pbMoive;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovieGenre')
+	DROP TABLE pbMovieGenre;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbGenre')
+	DROP TABLE pbGenre;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbActorMovie')
+	DROP TABLE pbActorMovie;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbActor')
+	DROP TABLE pbActor;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbDirectorMovie')
+	DROP TABLE pbDirectorMovie;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbDirector')
+	DROP TABLE pbDirector;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbKeywordMovie')
+	DROP TABLE pbKeywordMovie;
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbKeyword')
+	DROP TABLE pbKeyword;
+---------------------------Creat tables ---------------------------------------------------
+CREATE TABLE [pbUser] 
+(
+  [pbUser_id] INT IDENTITY(1,1) NOT NULL,
+  [pbUserID] NVarchar(25) NOT NULL,
+  [pbUserFirstName] NVarchar(25) NOT NULL,
+  [pbUserLastName] NVarchar(50) NOT NULL,
+  [pbUserPassword] NVarchar(50) NOT NULL,
+  [pbUserStatus] BIT NOT NULL,
+  [pbUserTypes] NVarchar(50) NOT NULL,
+  [pbUserRentalCount] INT,
+  [pbUserReservedCount] INT
+);
+
+CREATE TABLE [pbMovie] (
+  [pbMovie_id] INT Identity (1,1) NOT NULL,
+  [pbMovieID] NVarchar(25) NOT NULL,
+  [pbMovieTitle] NVarchar(100) NOT NULL,
+);
+
+CREATE TABLE [pbRental] (
+  [pbRental_ID] INT IDENTITY(1,1) NOT NULL,
+  [pbMovieItem_id] INT NOT NULL,
+  [pbUser_id] INT NOT NULL,
+  [pbRentalDate] DATE NOT NULL,
+  [pbDueDate] DATE NOT NULL,
+  [pbReturnDate] DATE,
+  [pbFees] SMALLMONEY
+);
+
+CREATE TABLE [pbReservation] (
+  [pbReservation_id] INT IDENTITY(1,1) NOT NULL,
+  [pbMovie_id] INT NOT NULL,
+  [pbFormat_id] INT  NOT NULL,
+  [pbUser_id] INT NOT NULL,
+  [pbReservedDate] date NOT NULL,
+);
+
+CREATE TABLE [pbUserPhone] (
+  [pbUser_id] INT IDENTITY(1,1) NOT NULL,
+  [pbPhoneNumber] INT NOT NULL
+);
+
+CREATE TABLE [pbPhoneNumber] (
+  [pbPhoneNumber] INT NOT NULL,
+  [pbPhoneType] NVarchar(25)
+);
+
+CREATE TABLE [pbSecurityAnswers] (
+  [pbUser_id] INT NOT NULL,
+  [pbSecurityQuestionID] INT IDENTITY(1,1) NOT NULL,
+  [pbSecurityQuestionAnswer] NVarchar(150) NOT NULL
+);
+
+CREATE TABLE [pbSecurityQuestions] (
+  [pbSecurityQuestionID] INT NOT NULL,
+  [pbSecurityQuestion] NVarchar(100) NOT NULL
+);
+
+CREATE TABLE [pbMovieItem] (
+  [pbMovieItem_id] INT Identity(1,1) NOT NULL,
+  [pbMovie_id] INT NOT NULL,
+  [pbMovieCopyNumber] INT NOT NULL,
+  [pbFormat_id] INT NOT NULL,
+);
+
+CREATE TABLE [pbFormat] (
+  [pbFormat_id] INT Identity(1,1) NOT NULL,
+  [FormatType] NVarchar(25) NOT NULL,
+);
+
+CREATE TABLE [pbMovieGenre] (
+  [pbMovie_id] INT NOT NULL,
+  [pbGenre_id] INT Identity (1,1) NOT NULL
+);
+
+CREATE TABLE [pbGenre] (
+  [pbGenre_id] INT Identity(1,1) NOT NULL,
+  [pbGenreType] NVarchar(30) NOT NULL,
+);
+
+CREATE TABLE [pbActorMovie] (
+  [pbMovie_id] INT NOT NULL,
+  [pbActor_id] INT NOT NULL
+);
+
+CREATE TABLE [pbActor] (
+  [pbActor_id] INT Identity NOT NULL,
+  [ActorFirstName] varchar(50) NOT NULL,
+  [ActorLastName] varchar(50) NOT NULL,
+  [pbActorMiddleName] varchar(50) NULL,
+);
+
+CREATE TABLE [pbDirectorMovie] (
+  [pbMovie_id] INT NOT NULL,
+  [pbDirector_id] INT NOT NULL
+);
+
+CREATE TABLE [pbDirector] (
+  [pbDirector_id] INT Identity (1,1) NOT NULL,
+  [pbDirectorFistName] varchar(50) NOT NULL,
+  [pbDirectorLastName] varchar(50) NOT NULL,
+  [pbDirectorMiddleName] varchar(50) NULL,
+);
+
+CREATE TABLE [pbKeywordMovie] (
+  [pbKeyword_id] INT NOT NULL,
+  [pbMovie_id] INT NOT NULL
+);
+
+CREATE TABLE [pbKeyword] (
+  [pbKeyword_id] INT Identity (1,1) NOT NULL,
+  [pbKeyword] varchar(30) NOT NULL,
+);
