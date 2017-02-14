@@ -1,0 +1,598 @@
+--PurpleBoxDVD create script
+--CS3550 Spring 2017
+--Samuel Reeder
+
+--Must make sure that PurpleBox is not the active database
+USE master; 
+
+--drop PurpleBoxDVD database if it exists
+IF EXISTS (SELECT * FROM sys.sysdatabases WHERE name = 'PurpleBoxDVD')
+	DROP DATABASE PurpleBoxDVD;
+
+--create PurpleBoxDVD database
+ CREATE DATABASE PurpleBoxDVD
+ ON PRIMARY
+ (NAME = N'PurpleBoxDVD', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQLEXPRESS\MSSQL\DATA\PurpleBoxDVD.mdf', 
+ SIZE = 5120KB, FILEGROWTH = 1024KB)
+ LOG ON
+ (NAME = N'PurpleBoxDVDLog', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQLEXPRESS\MSSQL\DATA\PurpleBoxDVDLog.ldf', 
+ SIZE = 2048KB, FILEGROWTH = 10%);
+ GO
+
+--Attach to New Database
+Use PurpleBoxDVD;
+
+----------------------------------------drop all tables if they exist--------------------------------------------------------------
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbReservation')
+	DROP TABLE pbReservation;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbActor')
+	DROP TABLE pbActor;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbDirector')
+	DROP TABLE pbDirector;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbActorMovie')
+	DROP TABLE pbActorMovie;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbDirectorMovie')
+	DROP TABLE pbDirectorMovie;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbKeyword')
+	DROP TABLE pbKeyword;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbKeywordMovie')
+	DROP TABLE pbKeywordMovie;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbGenre')
+	DROP TABLE pbGenre;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovieGenre')
+	DROP TABLE pbMovieGenre;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbFormat')
+	DROP TABLE pbFormat;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbRental')
+	DROP TABLE pbRental;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovieItem')
+	DROP TABLE pbMovieItem;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbMovie')
+	DROP TABLE pbMovie;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbPhoneNumber')
+	DROP TABLE pbPhoneNumber;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbUserPhone')
+	DROP TABLE pbUserPhone;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbSecurityQuestions')
+	DROP TABLE pbSecurityQuestions;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbSecurityAnswers')
+	DROP TABLE pbSecurityAnswers;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE NAME = N'pbUser')
+	DROP TABLE pbUser;
+
+
+--------------------------CREATE ALL TABLES----------------------------------------------------------------------------------------
+CREATE TABLE pbDirector
+(
+	pbDirector_id int IDENTITY(1,1) NOT NULL,
+	pbDirectorFirstName nvarchar(50) NOT NULL,
+	pbDirectorLastName nvarchar(50) NOT NULL,
+	pbDirectorMiddleName nvarchar(50) NULL
+);
+
+CREATE TABLE pbDirectorMovie
+(
+	pbMovie_id int NOT NULL,
+	pbDirector_id int NOT NULL
+);
+
+CREATE TABLE pbActor
+(
+	pbActor_id int IDENTITY(1,1) NOT NULL,
+	pbActorFirstName nvarchar(50) NOT NULL,
+	pbActorLastName nvarchar(50) NOT NULL,
+	pbActorMiddleName nvarchar(50) NULL
+);
+
+CREATE TABLE pbActorMovie
+(
+	pbMovie_id int NOT NULL,
+	pbActor_id int NOT NULL
+);
+
+CREATE TABLE PbMovie
+(
+	pbMovie_id int IDENTITY(1,1) NOT NULL,
+	pbMovieID nvarchar(25) NOT NULL,
+	pbmovieTitle nvarchar(100) NOT NULL
+);
+
+CREATE TABLE pbKeyword
+(
+	pbKeyword_id int IDENTITY(1,1) NOT NULL,
+	pbKeyword nvarchar(30) NOT NULL
+);
+
+CREATE TABLE pbKeywordMovie
+(
+	pbKeyword_id int NOT NULL,
+	pbMovie_id int NOT NULL
+);
+
+CREATE TABLE pbGenre
+(
+	pbGenre_id int IDENTITY(1,1) NOT NULL,
+	pbGenreType nvarchar(30) NOT NULL
+);
+
+CREATE TABLE pbMovieGenre
+(
+	pbMovie_id int NOT NULL,
+	pbGenre_id int NOT NULL
+);
+
+CREATE TABLE pbMovieItem
+(
+	pbMovieItem_id int IDENTITY(1,1) NOT NULL,
+	pbMovie_id int NOT NULL,
+	pbMovieCopyNumber int NOT NULL,
+	pbFormat_id int NOT NULL
+);
+
+CREATE TABLE pbFormat
+(
+	pbFormat_id int IDENTITY(1,1) NOT NULL,
+	pbFormatType nvarchar(25) NOT NULL
+);
+
+CREATE TABLE pbRental
+(
+	pbRental_ID int IDENTITY(1,1) NOT NULL,
+	pbMovieItem_id int NOT NULL,
+	pbUser_id int NOT NULL,
+	pbRentalDate DATETIME NOT NULL,
+	pbDueDate DATETIME NOT NULL,
+	pbReturnDate DATETIME,
+	pbFees SMALLMONEY
+);
+
+CREATE TABLE pbUser
+(
+	pbUser_id int IDENTITY(1,1) NOT NULL,
+	pbUserID nvarchar(25) NOT NULL,
+	pbUserFirstName nvarchar(25) NOT NULL,
+	pbUserLastName nvarchar(50) NOT NULL,
+	pbUserPassword nvarchar(50) NOT NULL,
+	pbUserStatus nvarchar(1) NOT NULL,
+	pbUserTypes nvarchar(50) NOT NULL,
+	pbUsersIsPremium bit,
+	pbUserRentalCount int,
+	pbUserRequestCount int
+);
+
+CREATE TABLE pbUserSecuirtyQuestions
+(
+	pbUser_id int NOT NULL,
+    pbSecurityQuestionID int NOT NULL,
+);
+
+CREATE TABLE pbSecurityQuestions
+(
+	pbSecurityQuestionID int IDENTITY(1,1) NOT NULL,
+	pbSecurityQuestion nvarchar(100) NOT NULL,
+	pbSecurityQuestionAnswer nvarchar(150) NOT NULL
+);
+
+CREATE TABLE pbUserPhone
+(
+	pbUser_id int NOT NULL,
+	pbPhoneNumber_id int NOT NULL
+);
+
+CREATE TABLE pbPhoneNumber
+(
+	pbPhoneNumber_id int IDENTITY (1,1),
+	pbPhoneNumber char(10) NOT NULL,
+	pbPhoneType nvarchar(25)
+);
+
+CREATE TABLE pbReservation
+(
+	pbReservation_id int IDENTITY(1,1) NOT NULL,
+	pbMovie_id int NOT NULL,
+	pbFormat_id int NOT NULL,
+	pbUser_id int NOT NULL,
+	pbReservedDate date NOT NULL
+);
+
+
+-------------------------------------SET PK Constraints--------------------------------------------------------------------
+
+----------pbDirector Table-------------
+---------primary key--------------
+ALTER TABLE pbDirector
+	ADD CONSTRAINT PK_pbDirector
+	PRIMARY KEY CLUSTERED (pbDirector_id);
+
+----------pbDirectorMovie Table-------------
+---------primary key--------------
+ALTER TABLE pbDirectorMovie
+	ADD CONSTRAINT PK_pbDirectorMovie
+	PRIMARY KEY CLUSTERED (pbMovie_id, pbDirector_id);
+
+----------pbActor Table-------------
+---------primary key--------------
+ALTER TABLE pbActor
+	ADD CONSTRAINT PK_pbActor
+	PRIMARY KEY CLUSTERED (pbActor_id);
+
+----------pbActorMovie Table-------------
+---------primary key--------------
+ALTER TABLE pbActorMovie
+	ADD CONSTRAINT PK_pbActorMovie
+	PRIMARY KEY CLUSTERED (pbMovie_id, pbActor_id);
+
+----------pbMovie Table-------------
+---------primary key--------------
+ALTER TABLE pbMovie
+	ADD CONSTRAINT PK_pbMovie
+	PRIMARY KEY CLUSTERED (pbMovie_id);
+
+----------pbKeyword Table-------------
+---------primary key--------------
+ALTER TABLE pbKeyword
+	ADD CONSTRAINT PK_pbKeyword
+	PRIMARY KEY CLUSTERED (pbKeyword_id);
+
+----------pbKeywordMovie Table-------------
+---------primary key--------------
+ALTER TABLE pbKeywordMovie
+	ADD CONSTRAINT PK_pbKeywordMovie
+	PRIMARY KEY CLUSTERED (pbKeyword_id, pbMovie_id);
+
+----------pbGenre Table-------------
+---------primary key--------------
+ALTER TABLE pbGenre
+	ADD CONSTRAINT PK_pbGenre
+	PRIMARY KEY CLUSTERED (pbGenre_id);
+
+----------pbMovieGenre Table-------------
+---------primary key--------------
+ALTER TABLE pbMovieGenre
+	ADD CONSTRAINT PK_pbMovieGenre
+	PRIMARY KEY CLUSTERED (pbMovie_id, pbGenre_id);
+
+----------pbMovieItem Table-------------
+---------primary key--------------
+ALTER TABLE pbMovieItem
+	ADD CONSTRAINT PK_pbMovieItem
+	PRIMARY KEY CLUSTERED (pbMovieItem_id);
+
+----------pbFormat Table-------------
+---------primary key--------------
+ALTER TABLE pbFormat
+	ADD CONSTRAINT PK_pbFormat
+	PRIMARY KEY CLUSTERED (pbFormat_id);
+
+----------pbRental Table-------------
+---------primary key--------------
+ALTER TABLE pbRental
+	ADD CONSTRAINT PK_pbRental
+	PRIMARY KEY CLUSTERED (pbRental_id);
+
+----------pbUser Table-------------
+---------primary key--------------
+ALTER TABLE pbUser
+	ADD CONSTRAINT PK_pbUser
+	PRIMARY KEY CLUSTERED (pbUser_id);
+
+----------pbSecurityAnswers Table-------------
+---------primary key--------------
+ALTER TABLE pbUserSecuirtyQuestions
+	ADD CONSTRAINT PK_pbSecurityAnswers
+	PRIMARY KEY CLUSTERED (pbUser_id, pbSecurityQuestionID);
+
+----------pbSecurityQuestions Table-------------
+---------primary key--------------
+ALTER TABLE pbSecurityQuestions
+	ADD CONSTRAINT PK_pbSecurityQuestions
+	PRIMARY KEY CLUSTERED (pbSecurityQuestionID);
+
+----------pbUserPhone Table-------------
+---------primary key--------------
+ALTER TABLE pbUserPhone
+	ADD CONSTRAINT PK_pbUserPhone
+	PRIMARY KEY CLUSTERED (pbUser_id, pbPhoneNumber_id);
+
+----------pbPhoneNumber Table-------------
+---------primary key--------------
+ALTER TABLE pbPhoneNumber
+	ADD CONSTRAINT PK_pbPhoneNumber_id
+	PRIMARY KEY CLUSTERED (pbPhoneNumber_id);
+
+----------pbReservation Table-------------
+---------primary key--------------
+ALTER TABLE pbReservation
+	ADD CONSTRAINT PK_pbReservation
+	PRIMARY KEY CLUSTERED (pbReservation_id);
+
+-------------------------------------SET AK Constraints--------------------------------------------------------------------
+
+----------pbDirector Table-------------
+-------------alternate key---------
+ALTER TABLE pbDirector
+	ADD CONSTRAINT AK_pbDirector_pbDirectorFirstName
+	UNIQUE(pbDirectorFirstName, pbDirectorLastName);
+
+----------pbActor Table-------------
+-------------alternate key---------
+ALTER TABLE pbActor
+	ADD CONSTRAINT AK_pbActor_pbActorFirstName
+	UNIQUE(pbActorFirstName, pbActorLastName);
+
+----------pbMovie Table-------------
+-------------alternate key---------
+ALTER TABLE pbMovie
+	ADD CONSTRAINT AK_pbMovie_pbMovieID
+	UNIQUE(pbMovieID);
+
+----------pbKeyword Table-------------
+-------------alternate key---------
+ALTER TABLE pbKeyword
+	ADD CONSTRAINT AK_pbKeyword_pbKeyword
+	UNIQUE(pbKeyword);
+
+----------pbGenre Table-------------
+-------------alternate key---------
+ALTER TABLE pbGenre
+	ADD CONSTRAINT AK_pbGenre_pbGenreType
+	UNIQUE(pbGenreType);
+
+----------pbMovieItem Table-------------
+-------------alternate key---------
+ALTER TABLE pbMovieItem
+	ADD CONSTRAINT AK_pbMovieItem_pbMovie_id
+	UNIQUE(pbMovie_id, pbMovieCopyNumber);
+
+----------pbFormat Table-------------
+-------------alternate key---------
+ALTER TABLE pbFormat
+	ADD CONSTRAINT AK_pbFormat_pbFormatType
+	UNIQUE(pbFormatType);
+
+----------pbRental Table-------------
+-------------alternate key---------
+ALTER TABLE pbRental
+	ADD CONSTRAINT AK_pbRental_pbUser_id
+	UNIQUE(pbUser_id);
+
+----------pbUser Table-------------
+-------------alternate key---------
+ALTER TABLE pbUser
+	ADD CONSTRAINT AK_pbUser_pbUserID
+	UNIQUE(pbUserID);
+
+----------pbSecurityQuestions Table-------------
+-------------alternate key---------
+ALTER TABLE pbSecurityQuestions
+	ADD CONSTRAINT AK_pbSecurityQuestions_pbSecurityQuestion
+	UNIQUE(pbSecurityQuestion);
+
+----------pbReservation Table-------------
+-------------alternate key---------
+ALTER TABLE pbReservation
+	ADD CONSTRAINT AK_pbReservation_pbMovie_id
+	UNIQUE(pbMovie_id, pbFormat_id, pbUser_id, pbReservedDate);
+
+-------------------------------------SET FK Constraints--------------------------------------------------------------------
+
+----------pbDirectorMovie Table-------------
+------------Foreign key--------------
+ALTER TABLE pbDirectorMovie
+	ADD CONSTRAINT FK_pbDirectorMovie_pbMovie_id
+	FOREIGN KEY (pbMovie_id) REFERENCES pbMovie(pbMovie_id);
+
+ALTER TABLE pbDirectorMovie
+	ADD CONSTRAINT FK_pbDirectorMovie_pbDirector_id
+	FOREIGN KEY (pbDirector_id) REFERENCES pbDirector(pbDirector_id);
+
+----------pbActorMovie Table-------------
+------------Foreign key--------------
+ALTER TABLE pbActorMovie
+	ADD CONSTRAINT FK_pbActorMovie_pbMovie_id
+	FOREIGN KEY (pbMovie_id) REFERENCES pbMovie(pbMovie_id);
+
+ALTER TABLE pbActorMovie
+	ADD CONSTRAINT FK_pbActorMovie_pbActor_id
+	FOREIGN KEY (pbActor_id) REFERENCES pbActor(pbActor_id);
+
+----------pbKeywordMovie Table-------------
+------------Foreign key--------------
+ALTER TABLE pbKeywordMovie
+	ADD CONSTRAINT FK_pbKeywordMovie_pbKeyword_id
+	FOREIGN KEY (pbKeyword_id) REFERENCES pbKeyword(pbKeyword_id);
+
+ALTER TABLE pbKeywordMovie
+	ADD CONSTRAINT FK_pbKeywordMovie_pbMovie_id
+	FOREIGN KEY (pbMovie_id) REFERENCES pbMovie(pbMovie_id);
+
+----------pbMovieGenre Table-------------
+------------Foreign key--------------
+ALTER TABLE pbMovieGenre
+	ADD CONSTRAINT FK_pbMovieGenre_pbKeyword_id
+	FOREIGN KEY (pbMovie_id) REFERENCES pbMovie(pbMovie_id);
+
+ALTER TABLE pbMovieGenre
+	ADD CONSTRAINT FK_pbMovieGenre_pbMovie_id
+	FOREIGN KEY (pbGenre_id) REFERENCES pbGenre(pbGenre_id);
+
+----------pbMovieItem Table-------------
+------------Foreign key--------------
+ALTER TABLE pbMovieItem
+	ADD CONSTRAINT FK_pbMovieItem_pbKeyword_id
+	FOREIGN KEY (pbMovie_id) REFERENCES pbMovie(pbMovie_id);
+
+ALTER TABLE pbMovieItem
+	ADD CONSTRAINT FK_pbMovieItem_pbFormat_id
+	FOREIGN KEY (pbFormat_id) REFERENCES pbFormat(pbFormat_id);
+
+----------pbRental Table-------------
+------------Foreign key--------------
+ALTER TABLE pbRental
+	ADD CONSTRAINT FK_pbRental_pbMovieItem_id
+	FOREIGN KEY (pbMovieItem_id) REFERENCES pbMovieItem(pbMovieItem_id);
+
+ALTER TABLE pbRental
+	ADD CONSTRAINT FK_pbRental_pbUser_id
+	FOREIGN KEY (pbUser_id) REFERENCES pbUser(pbUser_id);
+
+----------pbSecurityAnswers Table-------------
+------------Foreign key--------------
+ALTER TABLE pbUserSecuirtyQuestions
+	ADD CONSTRAINT FK_SecurityAnswers_pbUser_id
+	FOREIGN KEY (pbUser_id) REFERENCES pbUser(pbUser_id);
+
+ALTER TABLE pbUserSecuirtyQuestions
+	ADD CONSTRAINT FK_SecurityAnswers_pbSecurityQuestionID
+	FOREIGN KEY (pbSecurityQuestionID) REFERENCES pbSecurityQuestions(pbSecurityQuestionID);
+
+----------pbUserPhone Table-------------
+------------Foreign key--------------
+ALTER TABLE pbUserPhone
+	ADD CONSTRAINT FK_UserPhone_pbUser_id
+	FOREIGN KEY (pbUser_id) REFERENCES pbUser(pbUser_id);
+
+ALTER TABLE pbUserPhone
+	ADD CONSTRAINT FK_UserPhone_pbPhoneNumber_id
+	FOREIGN KEY (pbPhoneNumber_id) REFERENCES pbPhoneNumber(pbPhoneNumber_id);
+
+----------pbReservation Table-------------
+------------Foreign key--------------
+ALTER TABLE pbReservation
+	ADD CONSTRAINT FK_pbReservation_pbMovie_id
+	FOREIGN KEY (pbMovie_id) REFERENCES pbMovie(pbMovie_id);
+
+ALTER TABLE pbReservation
+	ADD CONSTRAINT FK_pbReservation_pbFormat_id
+	FOREIGN KEY (pbFormat_id) REFERENCES pbFormat(pbFormat_id);
+
+ALTER TABLE pbReservation
+	ADD CONSTRAINT FK_Reservation_pbUser_id
+	FOREIGN KEY (pbUser_id) REFERENCES pbUser(pbUser_id);
+
+-------------------------------------Check Constraints--------------------------------------------------------------------
+------------------------------
+--Check Constraints
+ALTER TABLE pbFormat
+	ADD CONSTRAINT CK_pbFormat_pbFormatType
+	CHECK (pbFormatType = 'DVD' OR pbFormatType = 'BLU');
+
+ALTER TABLE pbPhoneNumber
+	ADD CONSTRAINT CK_pbPhoneNumber_pbPhoneNumber
+	CHECK (pbPhoneNumber like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
+
+ALTER TABLE pbUser
+	ADD CONSTRAINT CK_pbUsers_isPremium
+	CHECK (pbUsersIsPremium = 0 or pbUsersIsPremium = 1);
+
+ALTER TABLE pbUser
+	ADD CONSTRAINT CK_pbUser_pbUserTypes
+	CHECK (pbUserTypes = 'A' OR pbUserTypes = 'C');
+
+ALTER TABLE pbUser
+	ADD CONSTRAINT CK_pbUser_pbUserStatus
+	CHECK (pbUserStatus = 'T' OR pbUserStatus = 'F');
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_rentalCount_Not_Premium
+--	CHECK(pbUserRentalCount <= 2 AND pbUsersIsPremium = 0);
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_requestCount_Not_Premium
+--	CHECK(pbUserRequestCount <= 2 AND pbUsersIsPremium = 0);
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_rentalCount_is_Premium
+--	CHECK(pbUserRentalCount <= 4 AND pbUsersIsPremium = 1);
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_requestCount_is_Premium
+--	CHECK(pbUserRequestCount <= 4 AND pbUsersIsPremium = 1);
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_pbUser_pbUserRentalCountN
+--	CHECK ((pbUserRentalCount <= 2 AND pbUserTypes = 'AN') OR (pbUserRentalCount <= 2 AND pbUserTypes = 'CN'));
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_pbUser_pbUserRentalCountP
+--	CHECK ((pbUserRentalCount <= 4 AND pbUserTypes = 'AP') OR (pbUserRentalCount <= 2 AND pbUserTypes = 'CP'));
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_pbUser_pbUserRequestCountN
+--	CHECK ((pbUserRequestCount <= 2 AND pbUserTypes = 'AN') OR (pbUserRequestCount <= 2 AND pbUserTypes = 'CN'));
+
+--ALTER TABLE pbUser
+--	ADD CONSTRAINT CK_pbUser_pbUserRequestCountP
+--	CHECK ((pbUserRequestCount <= 4 AND pbUserTypes = 'AP') OR (pbUserRequestCount <= 2 AND pbUserTypes = 'CP'));
+
+
+--for user_id do select from wehere usertype='A'
+--lastchanngeddate GETDATE();
+--Select * from all tables at the end
+
+--Insert 1 Admin User
+INSERT INTO pbUser(pbUserID, pbUserFirstName, pbUserLastName, pbUserPassword, pbUserStatus, pbUserTypes,pbUsersIsPremium,pbUserRentalCount,pbUserRequestCount)
+VALUES ('803576', 'Larry', 'Bird', 'Celtic33', 'T', 'A',1,0,0);
+----Insert 1 Customer User
+INSERT INTO pbUser(pbUserID, pbUserFirstName, pbUserLastName, pbUserPassword, pbUserStatus, pbUserTypes,pbUsersIsPremium,pbUserRentalCount,pbUserRequestCount)
+VALUES ('007', 'James', 'Bond', 'Lisc3nc32Kill', 'T', 'C',0,0,0);
+----Insert 2 phone numbers for each user
+INSERT INTO pbPhoneNumber(pbPhoneNUmber, pbPhoneType)
+VALUES ('8015529666', 'Home');--Larry's 1st number
+INSERT INTO pbPhoneNumber(pbPhoneNUmber, pbPhoneType)
+VALUES ('8015529566', 'Cell');--Larry's 2st number
+INSERT INTO pbPhoneNumber(pbPhoneNUmber, pbPhoneType)
+VALUES ('7670070077', 'Home');--James 1st number
+INSERT INTO pbPhoneNumber(pbPhoneNUmber, pbPhoneType)
+VALUES ('7070070077', 'Secret');--James 2nd number
+
+--populating the UserPhone intermediate table
+INSERT INTO pbUserPhone(pbUser_id, pbPhoneNumber_id)
+VALUES ((SELECT pbUser_id FROM pbUser WHERE pbUserFirstName = 'Larry' AND pbUserLastName = 'Bird'), (SELECT pbPhoneNumber_id FROM pbPhoneNumber WHERE pbPhoneNumber = '8015529666'));
+INSERT INTO pbUserPhone(pbUser_id, pbPhoneNumber_id)
+VALUES ((SELECT pbUser_id FROM pbUser WHERE pbUserFirstName = 'Larry' AND pbUserLastName = 'Bird'), (SELECT pbPhoneNumber_id FROM pbPhoneNumber WHERE pbPhoneNumber = '8015529566'));
+INSERT INTO pbUserPhone(pbUser_id, pbPhoneNumber_id)
+VALUES ((SELECT pbUser_id FROM pbUser WHERE pbUserFirstName = 'James' AND pbUserLastName = 'Bond'), (SELECT pbPhoneNumber_id FROM pbPhoneNumber WHERE pbPhoneNumber = '7670070077'));
+INSERT INTO pbUserPhone(pbUser_id, pbPhoneNumber_id)
+VALUES ((SELECT pbUser_id FROM pbUser WHERE pbUserFirstName = 'James' AND pbUserLastName = 'Bond'), (SELECT pbPhoneNumber_id FROM pbPhoneNumber WHERE pbPhoneNumber = '7070070077'));
+
+--4. Two Security Questions for each user
+INSERT INTO pbSecurityQuestions(pbSecurityQuestion,pbSecurityQuestionAnswer)
+       VALUES('What is your favorite sports team','Celtics');--Larry Q 1
+INSERT INTO pbSecurityQuestions(pbSecurityQuestion,pbSecurityQuestionAnswer)
+       VALUES('What is your favorite number','33');--Larry Q 2
+
+
+--5. Three Movies
+--6. Three Genres (which will relate to the Movies you have entered)
+--7. Six Actors (two each from the Movies that you have entered)
+--8. Three Directors (one for each of the Movies)
+--9. Two MovieItems (one DVD and one Blu-Ray for each of the Movies)
+--10. Insert rows into the association tables for Actors, Directors and Genres 
+--such that the end result will have the correct genre, director and actors for each Movie. 
+--Do not hard code the primary keys from the Actor, Director, Genre tables into the insert statement. 
+--Instead, do a subquery to pull the primary key needed using the actor, director or genre name.
+
+
+
+
+SELECT * FROM pbUser;
+SELECT * FROM pbUserPhone;
+SELECT * FROM pbPhoneNumber;
